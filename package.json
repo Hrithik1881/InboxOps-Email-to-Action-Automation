@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "description": "Email-to-Action Automation for B2B Sales & Quotation Teams",
+  "homepage": "https://hrithik1881.github.io/InboxOps-Email-to-Action-Automation/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hrithik1881/InboxOps-Email-to-Action-Automation.git"
+  },
   "author": "Hrithik",
   "license": "MIT",
   "workspaces": [

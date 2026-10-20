@@ -1,10 +1,13 @@
 <div align="center">
 
+<img src="assets/icon.jpg" alt="InboxOps App Icon" width="96" height="96" style="border-radius:22px; box-shadow:0 8px 28px rgba(0,0,0,0.5); margin-bottom:12px;" />
+
 # 📬 InboxOps
 ### *Email-to-Action Automation for B2B Sales & Quotation Teams*
 
 Turn chaotic business email enquiries into evidence-backed cases, assigned tasks, trackable deadlines, and auditable outcomes.
 
+[![Live Website](https://img.shields.io/badge/Website-Live_on_GitHub_Pages-0ea5e9?style=flat&logo=githubpages&logoColor=white)](https://hrithik1881.github.io/InboxOps-Email-to-Action-Automation/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-blue.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Electron](https://img.shields.io/badge/Electron-30+-47848F.svg?logo=electron&logoColor=white)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/React-18+-61DAFB.svg?logo=react&logoColor=black)](https://react.dev/)
@@ -15,6 +18,9 @@ Turn chaotic business email enquiries into evidence-backed cases, assigned tasks
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 [![CI Pipeline](https://img.shields.io/badge/CI-GitHub_Actions-2088FF.svg?logo=github-actions&logoColor=white)](./.github/workflows/ci.yml)
 
+**[🌐 Visit Live Landing Page & Interactive Preview](https://hrithik1881.github.io/InboxOps-Email-to-Action-Automation/)**
+
+[Live Website](https://hrithik1881.github.io/InboxOps-Email-to-Action-Automation/) •
 [System Architecture](#-system-architecture) •
 [Core Features](#-core-capabilities) •
 [Project Structure](#-monorepo-structure) •
@@ -35,6 +41,9 @@ Small B2B quotation and sales teams lose revenue every day when high-value custo
 - **Hosted Resilience**: Independent cloud background workers (Redis + BullMQ) that process inboxes, calculate SLAs, and schedule reminders even when client workstations are shut down.
 - **Evidence-Backed AI**: AI classifies emails and extracts line items, quantities, and requested deadlines—citing exact character spans and document coordinates so humans never have to guess.
 - **Human-in-the-Loop**: AI proposes; humans review, correct, and approve. Zero autonomous outbound emails or commercial commitments without human authorization.
+
+> 🌐 **Interactive Landing Page & Live App Preview**: Experience the animated, Apple-grade interface and simulate the AI review queue in your browser:  
+> **[https://hrithik1881.github.io/InboxOps-Email-to-Action-Automation/](https://hrithik1881.github.io/InboxOps-Email-to-Action-Automation/)**
 
 ---
 
