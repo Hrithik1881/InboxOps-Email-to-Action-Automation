@@ -1,0 +1,36 @@
+name: Feature Request
+description: Suggest an idea or enhancement for InboxOps
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please refer to the project specification in `docs/` before submitting. Remember our core principles: evidence over assertion, least privilege, human control, and small scope first.
+  - type: input
+    id: title
+    attributes:
+      label: Feature Title
+      description: Clear, short title for the requested feature
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a specific operational pain point or workflow bottleneck?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see, including UI changes, API endpoints, or worker jobs.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any alternative solutions or workarounds you have considered.
+    validations:
+      required: false

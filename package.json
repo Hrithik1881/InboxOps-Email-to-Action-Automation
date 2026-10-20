@@ -1,0 +1,21 @@
+{
+  "name": "inboxops-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Email-to-Action Automation for B2B Sales & Quotation Teams",
+  "author": "Hrithik",
+  "license": "MIT",
+  "workspaces": [
+    "apps/*",
+    "apps/workers/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "lint": "echo \"Running workspace linter...\"",
+    "typecheck": "echo \"Running workspace typecheck...\"",
+    "test": "echo \"Running workspace test suites...\""
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
