@@ -927,6 +927,81 @@
       line-height: 1.6;
     }
 
+    /* Workflow SVG Pipeline */
+    .workflow-svg-wrapper {
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto 1.5rem;
+      padding: 0 1rem;
+    }
+    .workflow-connector-svg {
+      width: 100%;
+      height: 38px;
+      overflow: visible;
+    }
+
+    /* KPI Grid & Cards for Overview Tab */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+    .kpi-card {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      transition: var(--transition-fast);
+    }
+    .kpi-card:hover {
+      border-color: var(--border-medium);
+      background: rgba(0, 0, 0, 0.35);
+    }
+    .kpi-label {
+      font-size: 0.72rem;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+    .kpi-value {
+      font-family: var(--font-display);
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .kpi-sub {
+      font-size: 0.72rem;
+      color: var(--accent-emerald);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .kpi-sub.warn {
+      color: #f87171;
+    }
+
+    /* Restrained Overdue Warning Pulse */
+    .sla-pulse-badge {
+      display: inline-block;
+      animation: subtleOverduePulse 1.4s ease 2 forwards;
+    }
+    @keyframes subtleOverduePulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.4); }
+      50% { transform: scale(1.05); box-shadow: 0 0 0 4px rgba(244, 63, 94, 0); }
+      100% { transform: scale(1); box-shadow: none; }
+    }
+
+    /* Highlight Newly Created Case */
+    .new-case-row {
+      background: rgba(16, 185, 129, 0.12) !important;
+      border-left: 3px solid var(--accent-emerald);
+    }
+
     /* ==========================================================================
        HOW IT WORKS (Interactive Stepper)
        ========================================================================== */
@@ -1432,6 +1507,7 @@
 
           <div class="window-actions">
             <div class="interactive-tabs">
+              <button class="tab-btn" id="tab-overview" onclick="switchAppTab('overview')">Overview</button>
               <button class="tab-btn active" id="tab-review" onclick="switchAppTab('review')">Review Queue (3)</button>
               <button class="tab-btn" id="tab-cases" onclick="switchAppTab('cases')">Active Cases (14)</button>
               <button class="tab-btn" id="tab-sla" onclick="switchAppTab('sla')">SLA Engine</button>
@@ -1446,7 +1522,7 @@
             <div>
               <div class="sidebar-section-title">Navigation</div>
               <ul class="sidebar-menu">
-                <li class="sidebar-item" onclick="switchAppTab('overview')">
+                <li class="sidebar-item" id="side-overview" onclick="switchAppTab('overview')">
                   <span>📊 Overview Dashboard</span>
                 </li>
                 <li class="sidebar-item active" id="side-review" onclick="switchAppTab('review')">
@@ -1711,6 +1787,26 @@
         <span class="section-tag">User Flow</span>
         <h2 class="section-title">From unread message to closed quotation in four steps.</h2>
       </div>
+ 
+      <!-- Animated SVG Workflow Pipeline -->
+      <div class="workflow-svg-wrapper">
+        <svg class="workflow-connector-svg" viewBox="0 0 1000 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="wfGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#3b82f6" />
+              <stop offset="35%" stop-color="#6366f1" />
+              <stop offset="70%" stop-color="#06b6d4" />
+              <stop offset="100%" stop-color="#10b981" />
+            </linearGradient>
+          </defs>
+          <path id="wf-path-bg" d="M 50 24 L 950 24" stroke="rgba(255,255,255,0.08)" stroke-width="2" stroke-dasharray="6 6" />
+          <path id="workflow-path-active" d="M 50 24 L 950 24" stroke="url(#wfGradient)" stroke-width="2.5" stroke-linecap="round" />
+          <circle cx="50" cy="24" r="5" fill="#3b82f6" />
+          <circle cx="350" cy="24" r="5" fill="#6366f1" />
+          <circle cx="650" cy="24" r="5" fill="#06b6d4" />
+          <circle cx="950" cy="24" r="5" fill="#10b981" />
+        </svg>
+      </div>
 
       <div class="stepper-container">
         <div class="step-card">
@@ -1945,8 +2041,21 @@
     <span id="toast-message">Success message</span>
   </div>
 
-  <!-- Interactive JavaScript Logic -->
-  <script>
+  <!-- Interactive JavaScript Logic with Anime.js v4 Motion Engine -->
+  <script type="module">
+    import {
+      animate,
+      stagger,
+      createTimeline,
+      createScope,
+      createDrawable,
+      onScroll,
+      utils
+    } from './assets/vendor/anime.esm.min.js';
+
+    // 1. Accessibility: Detect reduced motion preference
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     // Smooth scroll helper
     function scrollToElement(selector) {
       const el = document.querySelector(selector);
@@ -1955,186 +2064,545 @@
       }
     }
 
-    // Interactive Tab Switcher in Desktop App Mockup
-    function switchAppTab(tab) {
-      const tabs = ['review', 'cases', 'sla'];
+    // 2. Coordinated Initial Hero Animation Sequence
+    function initHeroMotion() {
+      if (prefersReduced) return;
+      const heroTl = createTimeline({
+        defaults: { ease: 'outQuad' }
+      });
+
+      heroTl
+        .add('.hero-badge-pill', {
+          opacity: [0, 1],
+          translateY: [8, 0],
+          duration: 350
+        })
+        .add('.hero-title', {
+          opacity: [0, 1],
+          translateY: [10, 0],
+          duration: 440
+        }, '-=140')
+        .add('.hero-subtitle', {
+          opacity: [0, 1],
+          translateY: [8, 0],
+          duration: 380
+        }, '-=180')
+        .add('.hero-cta-group .btn', {
+          opacity: [0, 1],
+          translateY: [6, 0],
+          delay: stagger(60),
+          duration: 300
+        }, '-=160')
+        .add('.hero-specs .spec-item', {
+          opacity: [0, 1],
+          translateY: [4, 0],
+          delay: stagger(40),
+          duration: 260
+        }, '-=140')
+        .add('.app-window', {
+          opacity: [0, 1],
+          translateY: [12, 0],
+          duration: 520,
+          ease: 'outCubic'
+        }, '-=180');
+    }
+
+    // 3. Workflow SVG Vector Animation
+    function initWorkflowSvgMotion() {
+      const pathEl = document.getElementById('workflow-path-active');
+      const workflowSection = document.getElementById('workflow');
+      if (!pathEl || !workflowSection || prefersReduced) return;
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            try {
+              const drawable = createDrawable(pathEl);
+              animate(drawable, {
+                draw: ['0 0', '0 1'],
+                duration: 1100,
+                ease: 'inOutQuad'
+              });
+            } catch (err) {
+              console.warn('SVG drawable fallback', err);
+            }
+            observer.disconnect();
+          }
+        });
+      }, { threshold: 0.25 });
+
+      observer.observe(workflowSection);
+    }
+
+    // 4. Staggered Card Scroll Reveals
+    function initScrollReveals() {
+      if (prefersReduced) return;
+
+      const revealGroups = [
+        { section: '#problem', targets: '.comp-card', delay: 60 },
+        { section: '#capabilities', targets: '.feature-card', delay: 40 },
+        { section: '#workflow', targets: '.step-card', delay: 50 },
+        { section: '#security', targets: '.sec-badge-card', delay: 40 },
+        { section: '#pricing', targets: '.pricing-card', delay: 60 }
+      ];
+
+      revealGroups.forEach(group => {
+        const secEl = document.querySelector(group.section);
+        if (!secEl) return;
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const cards = secEl.querySelectorAll(group.targets);
+              if (cards.length > 0) {
+                animate(cards, {
+                  opacity: [0, 1],
+                  translateY: [10, 0],
+                  delay: stagger(group.delay),
+                  duration: 340,
+                  ease: 'outQuad'
+                });
+              }
+              observer.disconnect();
+            }
+          });
+        }, { threshold: 0.15 });
+
+        observer.observe(secEl);
+      });
+    }
+
+    // 5. Number Count-Up Utility using Anime.js v4
+    function countUp(targetSelector, finalVal, decimals = 0, prefix = '', suffix = '') {
+      const el = document.querySelector(targetSelector);
+      if (!el) return;
+      if (prefersReduced) {
+        el.textContent = `${prefix}${finalVal.toFixed(decimals)}${suffix}`;
+        return;
+      }
+
+      const holder = { val: 0 };
+      animate(holder, {
+        val: finalVal,
+        duration: 550,
+        ease: 'outCubic',
+        onRender: () => {
+          el.textContent = `${prefix}${holder.val.toFixed(decimals)}${suffix}`;
+        }
+      });
+    }
+
+    // 6. Interactive Desktop Tab Switcher with Anime.js v4 Panel Transitions
+    let currentTab = 'review';
+    let recentlyApprovedId = null;
+
+    function switchAppTab(tab, newCaseId = null) {
+      if (newCaseId) recentlyApprovedId = newCaseId;
+
+      const tabs = ['overview', 'review', 'cases', 'sla'];
       tabs.forEach(t => {
         const btn = document.getElementById('tab-' + t);
         if (btn) btn.classList.remove('active');
+        const side = document.getElementById('side-' + t);
+        if (side) side.classList.remove('active');
       });
-
-      const sideReview = document.getElementById('side-review');
-      const sideCases = document.getElementById('side-cases');
-      if (sideReview) sideReview.classList.remove('active');
-      if (sideCases) sideCases.classList.remove('active');
 
       const targetBtn = document.getElementById('tab-' + tab);
       if (targetBtn) targetBtn.classList.add('active');
 
-      const workspace = document.getElementById('app-workspace-content');
+      const targetSide = document.getElementById('side-' + tab);
+      if (targetSide) targetSide.classList.add('active');
 
-      if (tab === 'review') {
-        if (sideReview) sideReview.classList.add('active');
-        workspace.innerHTML = `
-          <div class="workspace-header">
-            <div class="workspace-title-area">
-              <h3>
-                <span>⚡ Proposal #REV-2026-089</span>
-                <span style="font-size:0.72rem; color:#9ca3af; font-weight:normal;">• Received 6 mins ago</span>
-              </h3>
-            </div>
-            <div style="font-size:0.8rem; color:#93c5fd; background:rgba(59,130,246,0.15); padding:3px 10px; border-radius:12px; border:1px solid rgba(59,130,246,0.3);">
-              Evidence Matched: 98.4% Confidence
-            </div>
-          </div>
-          <div class="workspace-split-pane">
-            <div class="pane-email">
-              <div class="email-meta-header">
-                <div class="email-row"><span class="email-label">From:</span><span class="email-val">Kavita Sharma &lt;kavita.sharma@aerotech-systems.in&gt;</span></div>
-                <div class="email-row"><span class="email-label">Subject:</span><span class="email-val">RFQ #4029 - Urgent Quotation for 500 Industrial Connectors</span></div>
-                <div class="email-row"><span class="email-label">Thread:</span><span class="email-val" style="font-family:var(--font-mono); font-size:0.75rem;">thr_gmail_193290abf81e</span></div>
-              </div>
-              <div class="email-body-text">
-                <p>Hi Team,</p><br>
-                <p>We are expanding our procurement for the upcoming Q4 assembly. Could you please share formal pricing and lead time for <span class="highlight-cite">500 units of Industrial Grade M12 8-pin Circular Connectors</span> (Part Ref: <span class="highlight-cite">CONN-M12-8P-M</span>)?</p><br>
-                <p>Our management needs to finalize the purchase orders promptly. <span class="highlight-cite">Please send your quotation by 28 October 2026, 5:00 PM IST</span> as our board meeting is scheduled for the next morning.</p><br>
-                <p>Delivery will be required at our Bengaluru facility.</p><br>
-                <p>Best regards,<br><strong>Kavita Sharma</strong><br>Senior Procurement Specialist</p>
-              </div>
-            </div>
-            <div class="pane-proposal">
-              <div class="proposal-card">
-                <div class="proposal-header">
-                  <span class="proposal-type-badge">Quotation Request</span>
-                  <span style="font-size:0.75rem; color:var(--text-tertiary);">Schema: v1.0.4 Validated</span>
-                </div>
-                <div class="extracted-fields">
-                  <div class="field-row"><span class="field-name">Customer Company</span><span class="field-value">AeroTech Systems</span></div>
-                  <div class="field-row"><span class="field-name">Primary Contact</span><span class="field-value">Kavita Sharma</span></div>
-                  <div class="field-row"><span class="field-name">Item Description</span><span class="field-value">M12 8-pin Circular Connectors</span></div>
-                  <div class="field-row"><span class="field-name">Quantity & Unit</span><span class="field-value" style="color:#60a5fa;">500 pieces</span></div>
-                  <div class="field-row"><span class="field-name">Customer Deadline</span><span class="field-value" style="color:#f59e0b;">28 Oct 2026, 17:00 IST <span class="field-citation-tag">Explicit</span></span></div>
-                  <div class="field-row"><span class="field-name">Suggested Internal SLA</span><span class="field-value" style="color:#10b981;">Today by 16:30 IST</span></div>
-                </div>
-                <div class="proposal-actions">
-                  <button class="btn-approve" onclick="simulateApproveProposal()"><span>✓ Approve & Create Case</span></button>
-                  <button class="btn-edit" onclick="simulateEditProposal()">✎ Edit</button>
-                  <button class="btn-edit" style="color:#f87171;" onclick="simulateRejectProposal()">✕ Reject</button>
-                </div>
-              </div>
-              <div style="font-size:0.75rem; color:var(--text-tertiary); padding: 0.25rem 0.5rem;">
-                🔒 Policy enforced: AI output links to source character spans. No emails sent autonomously.
-              </div>
-            </div>
-          </div>
-        `;
-      } else if (tab === 'cases') {
-        if (sideCases) sideCases.classList.add('active');
-        workspace.innerHTML = `
-          <div class="workspace-header">
-            <div class="workspace-title-area">
-              <h3><span>📋 Active Cases (14 Total)</span></h3>
-            </div>
-            <div style="display:flex; gap:0.5rem;">
-              <button class="btn btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.65rem;">Filter by Owner</button>
-              <button class="btn btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.65rem;">Priority: High</button>
-            </div>
-          </div>
-          <div style="padding:1.25rem; overflow-x:auto;">
-            <table style="width:100%; border-collapse:collapse; font-size:0.82rem; text-align:left;">
-              <thead>
-                <tr style="border-bottom:1px solid var(--border-subtle); color:var(--text-tertiary);">
-                  <th style="padding:0.6rem;">CASE ID</th>
-                  <th style="padding:0.6rem;">CUSTOMER</th>
-                  <th style="padding:0.6rem;">SUBJECT</th>
-                  <th style="padding:0.6rem;">STATUS</th>
-                  <th style="padding:0.6rem;">OWNER</th>
-                  <th style="padding:0.6rem;">SLA DUE</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
-                  <td style="padding:0.75rem; font-family:var(--font-mono); color:#93c5fd;">CASE-2026-0042</td>
-                  <td style="padding:0.75rem; font-weight:600;">Bharat Dynatech</td>
-                  <td style="padding:0.75rem;">5,000 units Stainless Fasteners</td>
-                  <td style="padding:0.75rem;"><span style="background:rgba(59,130,246,0.15); color:#60a5fa; padding:2px 8px; border-radius:10px;">InProgress</span></td>
-                  <td style="padding:0.75rem;">Rahul Verma</td>
-                  <td style="padding:0.75rem; color:#f59e0b;">In 2 hours</td>
-                </tr>
-                <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
-                  <td style="padding:0.75rem; font-family:var(--font-mono); color:#93c5fd;">CASE-2026-0039</td>
-                  <td style="padding:0.75rem; font-weight:600;">Titan Precision</td>
-                  <td style="padding:0.75rem;">Custom CNC Milling RFQ</td>
-                  <td style="padding:0.75rem;"><span style="background:rgba(244,63,94,0.15); color:#f87171; padding:2px 8px; border-radius:10px;">Overdue</span></td>
-                  <td style="padding:0.75rem;">Priya Iyer</td>
-                  <td style="padding:0.75rem; color:#f43f5e; font-weight:bold;">Overdue (4 hrs)</td>
-                </tr>
-                <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
-                  <td style="padding:0.75rem; font-family:var(--font-mono); color:#93c5fd;">CASE-2026-0038</td>
-                  <td style="padding:0.75rem; font-weight:600;">Apex Electronics</td>
-                  <td style="padding:0.75rem;">SMD Capacitor Batch 25k</td>
-                  <td style="padding:0.75rem;"><span style="background:rgba(16,185,129,0.15); color:#34d399; padding:2px 8px; border-radius:10px;">Resolved</span></td>
-                  <td style="padding:0.75rem;">Anil Kumar</td>
-                  <td style="padding:0.75rem; color:#10b981;">Completed</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        `;
-      } else if (tab === 'sla') {
-        workspace.innerHTML = `
-          <div class="workspace-header">
-            <div class="workspace-title-area">
-              <h3><span>⏰ Timezone & SLA Escalation Engine</span></h3>
-            </div>
-            <div style="font-size:0.8rem; color:#10b981;">Engine State: Active Heartbeat</div>
-          </div>
-          <div style="padding:1.5rem; display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
-            <div style="background:rgba(0,0,0,0.25); border:1px solid var(--border-subtle); border-radius:12px; padding:1.25rem;">
-              <h4 style="font-size:0.9rem; font-weight:700; color:#fff; margin-bottom:0.75rem;">Workspace Configuration</h4>
-              <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.82rem; color:var(--text-secondary);">
-                <div><strong>Timezone:</strong> Asia/Kolkata (UTC +05:30)</div>
-                <div><strong>Business Hours:</strong> Monday – Friday (09:00 – 18:30)</div>
-                <div><strong>Quiet Hours:</strong> Enforced after 20:00 (notifications queued)</div>
-                <div><strong>Manager Escalation:</strong> Triggers at 80% SLA elapsed</div>
-              </div>
-            </div>
-            <div style="background:rgba(0,0,0,0.25); border:1px solid var(--border-subtle); border-radius:12px; padding:1.25rem;">
-              <h4 style="font-size:0.9rem; font-weight:700; color:#fff; margin-bottom:0.75rem;">Background Queue Metrics</h4>
-              <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.82rem; color:var(--text-secondary);">
-                <div><strong>Active BullMQ Workers:</strong> 3 (email-sync, extraction, reminders)</div>
-                <div><strong>Queue Latency p95:</strong> 180 ms</div>
-                <div><strong>Deduplication Ratio:</strong> 100% replay safe (0 collisions)</div>
-                <div><strong>Provider Uptime:</strong> 99.98%</div>
-              </div>
-            </div>
-          </div>
-        `;
+      const workspace = document.getElementById('app-workspace-content');
+      if (!workspace) return;
+
+      const executeContentRender = () => {
+        currentTab = tab;
+        if (tab === 'overview') {
+          renderOverviewTab(workspace);
+        } else if (tab === 'review') {
+          renderReviewTab(workspace);
+        } else if (tab === 'cases') {
+          renderCasesTab(workspace, recentlyApprovedId);
+        } else if (tab === 'sla') {
+          renderSlaTab(workspace);
+        }
+
+        if (!prefersReduced) {
+          animate(workspace, {
+            opacity: [0, 1],
+            translateY: [6, 0],
+            duration: 240,
+            ease: 'outQuad'
+          });
+        }
+      };
+
+      if (!prefersReduced) {
+        animate(workspace, {
+          opacity: [1, 0],
+          translateY: [0, -4],
+          duration: 120,
+          ease: 'inQuad',
+          onComplete: executeContentRender
+        });
+      } else {
+        executeContentRender();
       }
     }
 
-    // Interactive Demo Simulation Functions
+    // --- Render Functions for Tabs ---
+
+    function renderOverviewTab(container) {
+      container.innerHTML = `
+        <div class="workspace-header">
+          <div class="workspace-title-area">
+            <h3><span>📊 Sales Operations Dashboard</span></h3>
+          </div>
+          <div style="font-size:0.75rem; color:#9ca3af; display:flex; align-items:center; gap:0.4rem;">
+            <span style="width:7px; height:7px; border-radius:50%; background:#10b981;"></span>
+            <span>All systems nominal • Auto-syncing</span>
+          </div>
+        </div>
+        <div style="padding:1.25rem;">
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <span class="kpi-label">Processed Inquiries</span>
+              <span class="kpi-value" id="kpi-processed">0</span>
+              <span class="kpi-sub">↑ 18% vs last month</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Awaiting Verification</span>
+              <span class="kpi-value" id="kpi-review">0</span>
+              <span class="kpi-sub" style="color:#60a5fa;">In Review Queue</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Active Cases</span>
+              <span class="kpi-value" id="kpi-cases">0</span>
+              <span class="kpi-sub">5 assigned to you</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Overdue SLAs</span>
+              <span class="kpi-value" id="kpi-overdue" style="color:#f87171;">0</span>
+              <span class="kpi-sub warn">Requires escalation</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Median Turnaround</span>
+              <span class="kpi-value">42<span style="font-size:1rem; font-weight:normal; color:#9ca3af;">min</span></span>
+              <span class="kpi-sub">↓ 68% manual delay</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">AI Citation Accuracy</span>
+              <span class="kpi-value" id="kpi-accuracy">0%</span>
+              <span class="kpi-sub">Verified against source</span>
+            </div>
+          </div>
+
+          <div style="background:rgba(0,0,0,0.22); border:1px solid var(--border-subtle); border-radius:12px; padding:1rem;">
+            <div style="font-size:0.78rem; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.75rem;">
+              Recent System Events
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.8rem; color:var(--text-secondary);">
+              <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.03); padding-bottom:0.35rem;">
+                <span>⚡ Proposal <strong>#REV-2026-089</strong> extracted (AeroTech Systems)</span>
+                <span style="color:var(--text-tertiary); font-family:var(--font-mono); font-size:0.72rem;">6m ago</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.03); padding-bottom:0.35rem;">
+                <span>📋 Case <strong>CASE-2026-0042</strong> assigned to Rahul Verma</span>
+                <span style="color:var(--text-tertiary); font-family:var(--font-mono); font-size:0.72rem;">24m ago</span>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span>📥 Mailbox reconciliation cycle completed (0 dropped messages)</span>
+                <span style="color:var(--text-tertiary); font-family:var(--font-mono); font-size:0.72rem;">45m ago</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      if (!prefersReduced) {
+        animate('.kpi-card', {
+          opacity: [0, 1],
+          translateY: [8, 0],
+          delay: stagger(35),
+          duration: 280,
+          ease: 'outQuad'
+        });
+      }
+
+      countUp('#kpi-processed', 1420);
+      countUp('#kpi-review', 3);
+      countUp('#kpi-cases', 14);
+      countUp('#kpi-overdue', 2);
+      countUp('#kpi-accuracy', 98.4, 1, '', '%');
+    }
+
+    function renderReviewTab(container) {
+      container.innerHTML = `
+        <div class="workspace-header">
+          <div class="workspace-title-area">
+            <h3>
+              <span>⚡ Proposal #REV-2026-089</span>
+              <span style="font-size:0.72rem; color:#9ca3af; font-weight:normal;">• Received 6 mins ago</span>
+            </h3>
+          </div>
+          <div style="font-size:0.8rem; color:#93c5fd; background:rgba(59,130,246,0.15); padding:3px 10px; border-radius:12px; border:1px solid rgba(59,130,246,0.3);">
+            Evidence Matched: 98.4% Confidence
+          </div>
+        </div>
+        <div class="workspace-split-pane">
+          <div class="pane-email">
+            <div class="email-meta-header">
+              <div class="email-row"><span class="email-label">From:</span><span class="email-val">Kavita Sharma &lt;kavita.sharma@aerotech-systems.in&gt;</span></div>
+              <div class="email-row"><span class="email-label">Subject:</span><span class="email-val">RFQ #4029 - Urgent Quotation for 500 Industrial Connectors</span></div>
+              <div class="email-row"><span class="email-label">Thread:</span><span class="email-val" style="font-family:var(--font-mono); font-size:0.75rem;">thr_gmail_193290abf81e</span></div>
+            </div>
+            <div class="email-body-text">
+              <p>Hi Team,</p><br>
+              <p>We are expanding our procurement for the upcoming Q4 assembly. Could you please share formal pricing and lead time for <span class="highlight-cite">500 units of Industrial Grade M12 8-pin Circular Connectors</span> (Part Ref: <span class="highlight-cite">CONN-M12-8P-M</span>)?</p><br>
+              <p>Our management needs to finalize the purchase orders promptly. <span class="highlight-cite">Please send your quotation by 28 October 2026, 5:00 PM IST</span> as our board meeting is scheduled for the next morning.</p><br>
+              <p>Delivery will be required at our Bengaluru facility.</p><br>
+              <p>Best regards,<br><strong>Kavita Sharma</strong><br>Senior Procurement Specialist</p>
+            </div>
+          </div>
+          <div class="pane-proposal">
+            <div class="proposal-card" id="active-proposal-card">
+              <div class="proposal-header">
+                <span class="proposal-type-badge">Quotation Request</span>
+                <span style="font-size:0.75rem; color:var(--text-tertiary);">Schema: v1.0.4 Validated</span>
+              </div>
+              <div class="extracted-fields">
+                <div class="field-row"><span class="field-name">Customer Company</span><span class="field-value">AeroTech Systems</span></div>
+                <div class="field-row"><span class="field-name">Primary Contact</span><span class="field-value">Kavita Sharma</span></div>
+                <div class="field-row"><span class="field-name">Item Description</span><span class="field-value">M12 8-pin Circular Connectors</span></div>
+                <div class="field-row"><span class="field-name">Quantity & Unit</span><span class="field-value" style="color:#60a5fa;">500 pieces</span></div>
+                <div class="field-row"><span class="field-name">Customer Deadline</span><span class="field-value" style="color:#f59e0b;">28 Oct 2026, 17:00 IST <span class="field-citation-tag">Explicit</span></span></div>
+                <div class="field-row"><span class="field-name">Suggested Internal SLA</span><span class="field-value" style="color:#10b981;">Today by 16:30 IST</span></div>
+              </div>
+              <div class="proposal-actions">
+                <button class="btn-approve" onclick="simulateApproveProposal()"><span>✓ Approve & Create Case</span></button>
+                <button class="btn-edit" onclick="simulateEditProposal()">✎ Edit</button>
+                <button class="btn-edit" style="color:#f87171;" onclick="simulateRejectProposal()">✕ Reject</button>
+              </div>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-tertiary); padding: 0.25rem 0.5rem;">
+              🔒 Policy enforced: AI output links to source character spans. No emails sent autonomously.
+            </div>
+          </div>
+        </div>
+      `;
+
+      if (!prefersReduced) {
+        animate('.field-row', {
+          opacity: [0, 1],
+          translateX: [6, 0],
+          delay: stagger(30, { start: 90 }),
+          duration: 250,
+          ease: 'outQuad'
+        });
+
+        const citeTl = createTimeline({ defaults: { ease: 'inOutQuad' } });
+        citeTl.add('.highlight-cite', {
+          backgroundColor: ['rgba(59,130,246,0.1)', 'rgba(59,130,246,0.36)', 'rgba(59,130,246,0.22)'],
+          duration: 400,
+          delay: stagger(80, { start: 180 })
+        });
+      }
+    }
+
+    function renderCasesTab(container, highlightId = null) {
+      const isNewCreated = highlightId === 'CASE-2026-0043';
+      container.innerHTML = `
+        <div class="workspace-header">
+          <div class="workspace-title-area">
+            <h3><span>📋 Active Cases (${isNewCreated ? '15' : '14'} Total)</span></h3>
+          </div>
+          <div style="display:flex; gap:0.5rem;">
+            <button class="btn btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.65rem;">Filter by Owner</button>
+            <button class="btn btn-secondary" style="font-size:0.75rem; padding:0.25rem 0.65rem;">Priority: High</button>
+          </div>
+        </div>
+        <div style="padding:1.25rem; overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.82rem; text-align:left;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border-subtle); color:var(--text-tertiary);">
+                <th style="padding:0.6rem;">CASE ID</th>
+                <th style="padding:0.6rem;">CUSTOMER</th>
+                <th style="padding:0.6rem;">SUBJECT</th>
+                <th style="padding:0.6rem;">STATUS</th>
+                <th style="padding:0.6rem;">OWNER</th>
+                <th style="padding:0.6rem;">SLA DUE</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${isNewCreated ? `
+                <tr class="case-row new-case-row" style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                  <td style="padding:0.75rem; font-family:var(--font-mono); color:#10b981; font-weight:bold;">CASE-2026-0043</td>
+                  <td style="padding:0.75rem; font-weight:600;">AeroTech Systems</td>
+                  <td style="padding:0.75rem;">500 units M12 Circular Connectors</td>
+                  <td style="padding:0.75rem;"><span style="background:rgba(16,185,129,0.2); color:#6ee7b7; padding:2px 8px; border-radius:10px; font-weight:bold;">Open (Approved)</span></td>
+                  <td style="padding:0.75rem;">Unassigned (Triage)</td>
+                  <td style="padding:0.75rem; color:#10b981;">Due in 7 hrs</td>
+                </tr>
+              ` : ''}
+              <tr class="case-row" style="border-bottom:1px solid rgba(255,255,255,0.03);">
+                <td style="padding:0.75rem; font-family:var(--font-mono); color:#93c5fd;">CASE-2026-0042</td>
+                <td style="padding:0.75rem; font-weight:600;">Bharat Dynatech</td>
+                <td style="padding:0.75rem;">5,000 units Stainless Fasteners</td>
+                <td style="padding:0.75rem;"><span style="background:rgba(59,130,246,0.15); color:#60a5fa; padding:2px 8px; border-radius:10px;">InProgress</span></td>
+                <td style="padding:0.75rem;">Rahul Verma</td>
+                <td style="padding:0.75rem; color:#f59e0b;">In 2 hours</td>
+              </tr>
+              <tr class="case-row" style="border-bottom:1px solid rgba(255,255,255,0.03);">
+                <td style="padding:0.75rem; font-family:var(--font-mono); color:#93c5fd;">CASE-2026-0039</td>
+                <td style="padding:0.75rem; font-weight:600;">Titan Precision</td>
+                <td style="padding:0.75rem;">Custom CNC Milling RFQ</td>
+                <td style="padding:0.75rem;"><span class="sla-pulse-badge" style="background:rgba(244,63,94,0.18); color:#fca5a5; padding:2px 8px; border-radius:10px;">Overdue</span></td>
+                <td style="padding:0.75rem;">Priya Iyer</td>
+                <td style="padding:0.75rem; color:#f43f5e; font-weight:bold;">Overdue (4 hrs)</td>
+              </tr>
+              <tr class="case-row" style="border-bottom:1px solid rgba(255,255,255,0.03);">
+                <td style="padding:0.75rem; font-family:var(--font-mono); color:#93c5fd;">CASE-2026-0038</td>
+                <td style="padding:0.75rem; font-weight:600;">Apex Electronics</td>
+                <td style="padding:0.75rem;">SMD Capacitor Batch 25k</td>
+                <td style="padding:0.75rem;"><span style="background:rgba(16,185,129,0.15); color:#34d399; padding:2px 8px; border-radius:10px;">Resolved</span></td>
+                <td style="padding:0.75rem;">Anil Kumar</td>
+                <td style="padding:0.75rem; color:#10b981;">Completed</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      if (!prefersReduced) {
+        animate('.case-row', {
+          opacity: [0, 1],
+          translateY: [4, 0],
+          delay: stagger(28),
+          duration: 220,
+          ease: 'outQuad'
+        });
+      }
+    }
+
+    function renderSlaTab(container) {
+      container.innerHTML = `
+        <div class="workspace-header">
+          <div class="workspace-title-area">
+            <h3><span>⏰ Timezone & SLA Escalation Engine</span></h3>
+          </div>
+          <div style="font-size:0.8rem; color:#10b981; display:flex; align-items:center; gap:0.4rem;">
+            <span style="width:7px; height:7px; border-radius:50%; background:#10b981;"></span>
+            <span>Engine State: Active Heartbeat</span>
+          </div>
+        </div>
+        <div style="padding:1.5rem; display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;" class="sla-container">
+          <div class="sla-card" style="background:rgba(0,0,0,0.25); border:1px solid var(--border-subtle); border-radius:12px; padding:1.25rem;">
+            <h4 style="font-size:0.9rem; font-weight:700; color:#fff; margin-bottom:0.75rem;">Workspace Configuration</h4>
+            <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.82rem; color:var(--text-secondary);">
+              <div><strong>Timezone:</strong> Asia/Kolkata (UTC +05:30)</div>
+              <div><strong>Business Hours:</strong> Monday – Friday (09:00 – 18:30)</div>
+              <div><strong>Quiet Hours:</strong> Enforced after 20:00 (notifications queued)</div>
+              <div><strong>Manager Escalation:</strong> Triggers at 80% SLA elapsed</div>
+            </div>
+          </div>
+          <div class="sla-card" style="background:rgba(0,0,0,0.25); border:1px solid var(--border-subtle); border-radius:12px; padding:1.25rem;">
+            <h4 style="font-size:0.9rem; font-weight:700; color:#fff; margin-bottom:0.75rem;">Background Queue Metrics</h4>
+            <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.82rem; color:var(--text-secondary);">
+              <div><strong>Active BullMQ Workers:</strong> 3 (email-sync, extraction, reminders)</div>
+              <div><strong>Queue Latency p95:</strong> 180 ms</div>
+              <div><strong>Deduplication Ratio:</strong> 100% replay safe (0 collisions)</div>
+              <div><strong>Provider Uptime:</strong> 99.98%</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      if (!prefersReduced) {
+        animate('.sla-card', {
+          opacity: [0, 1],
+          translateY: [6, 0],
+          delay: stagger(50),
+          duration: 260,
+          ease: 'outQuad'
+        });
+      }
+    }
+
+    // 7. Interactive Demo Simulation Functions with Anime.js v4
     function simulateApproveProposal() {
-      showToast('Proposal #REV-2026-089 approved! Created CASE-2026-0043.');
-      setTimeout(() => {
-        switchAppTab('cases');
-      }, 900);
+      const approveBtn = document.querySelector('.btn-approve');
+      const card = document.getElementById('active-proposal-card');
+
+      if (prefersReduced) {
+        showToast('✓ Proposal approved! Created CASE-2026-0043.');
+        switchAppTab('cases', 'CASE-2026-0043');
+        return;
+      }
+
+      const tl = createTimeline({
+        defaults: { ease: 'outQuad' }
+      });
+
+      if (approveBtn) {
+        tl.add(approveBtn, {
+          scale: [1, 0.95, 1],
+          duration: 160
+        });
+      }
+
+      if (card) {
+        tl.add(card, {
+          borderColor: ['rgba(255,255,255,0.08)', '#10b981', 'rgba(255,255,255,0.08)'],
+          duration: 320
+        }, '-=60');
+      }
+
+      tl.call(() => {
+        showToast('✓ Proposal approved! Created CASE-2026-0043.');
+        setTimeout(() => {
+          switchAppTab('cases', 'CASE-2026-0043');
+        }, 300);
+      });
     }
 
     function simulateEditProposal() {
-      showToast('Editing fields enabled in desktop client.');
+      const card = document.getElementById('active-proposal-card');
+      if (card && !prefersReduced) {
+        animate(card, {
+          borderColor: ['rgba(255,255,255,0.08)', '#3b82f6', 'rgba(255,255,255,0.08)'],
+          duration: 320,
+          ease: 'outQuad'
+        });
+      }
+      showToast('Inline field editing unlocked in desktop window.');
     }
 
     function simulateRejectProposal() {
+      const card = document.getElementById('active-proposal-card');
+      if (card && !prefersReduced) {
+        animate(card, {
+          borderColor: ['rgba(255,255,255,0.08)', '#f43f5e', 'rgba(255,255,255,0.08)'],
+          duration: 320,
+          ease: 'outQuad'
+        });
+      }
       showToast('Proposal deferred to low-priority spam triage.');
     }
 
-    // Waitlist and Toast logic
+    // 8. Waitlist Modal & Toast Notification
     function openWaitlistModal(tier) {
       const emailInput = document.getElementById('waitlist-email');
       if (emailInput) {
         scrollToElement('#download');
         emailInput.focus();
+        if (!prefersReduced) {
+          animate(emailInput, {
+            scale: [1, 1.03, 1],
+            duration: 200,
+            ease: 'outQuad'
+          });
+        }
         if (tier) {
           showToast(`Selected ${tier} Tier. Enter your email for priority onboarding!`);
         }
@@ -2143,25 +2611,51 @@
 
     function handleWaitlistSubmit(e) {
       e.preventDefault();
-      const email = document.getElementById('waitlist-email').value;
+      const input = document.getElementById('waitlist-email');
+      const email = input ? input.value : '';
       if (email) {
-        showToast(`🎉 You're on the list! Welcome email sent to ${email}`);
-        document.getElementById('waitlist-email').value = '';
+        showToast(`🎉 You're on the list! Early access notification sent to ${email}`);
+        if (input) input.value = '';
       }
     }
 
     function showToast(message) {
       const toast = document.getElementById('toast');
       const toastMsg = document.getElementById('toast-message');
+      if (!toast || !toastMsg) return;
+
       toastMsg.innerText = message;
       toast.classList.add('show');
+
+      if (!prefersReduced) {
+        animate(toast, {
+          opacity: [0, 1],
+          translateY: [16, 0],
+          duration: 240,
+          ease: 'outQuad'
+        });
+      }
+
       setTimeout(() => {
-        toast.classList.remove('show');
-      }, 4000);
+        if (!prefersReduced) {
+          animate(toast, {
+            opacity: [1, 0],
+            translateY: [0, 16],
+            duration: 200,
+            ease: 'inQuad',
+            onComplete: () => {
+              toast.classList.remove('show');
+            }
+          });
+        } else {
+          toast.classList.remove('show');
+        }
+      }, 3500);
     }
 
     function toggleMobileNav() {
       const links = document.querySelector('.nav-links');
+      if (!links) return;
       if (links.style.display === 'flex') {
         links.style.display = 'none';
       } else {
@@ -2177,6 +2671,29 @@
         links.style.marginTop = '0.5rem';
         links.style.border = '1px solid var(--border-medium)';
       }
+    }
+
+    // Attach to window for inline HTML onclick attributes
+    window.switchAppTab = switchAppTab;
+    window.simulateApproveProposal = simulateApproveProposal;
+    window.simulateEditProposal = simulateEditProposal;
+    window.simulateRejectProposal = simulateRejectProposal;
+    window.scrollToElement = scrollToElement;
+    window.openWaitlistModal = openWaitlistModal;
+    window.handleWaitlistSubmit = handleWaitlistSubmit;
+    window.toggleMobileNav = toggleMobileNav;
+
+    // Initialize all motion modules
+    document.addEventListener('DOMContentLoaded', () => {
+      initHeroMotion();
+      initWorkflowSvgMotion();
+      initScrollReveals();
+    });
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      initHeroMotion();
+      initWorkflowSvgMotion();
+      initScrollReveals();
     }
   </script>
 </body>

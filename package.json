@@ -17,10 +17,17 @@
   ],
   "scripts": {
     "lint": "echo \"Running workspace linter...\"",
-    "typecheck": "echo \"Running workspace typecheck...\"",
+    "typecheck": "tsc --noEmit",
     "test": "echo \"Running workspace test suites...\""
   },
   "engines": {
     "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "animejs": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2"
   }
 }
